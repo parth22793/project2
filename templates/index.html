@@ -1,0 +1,191 @@
+{% extends "layout.html" %}
+
+{% block title %}Flack{% endblock %}
+
+{% block body %}
+
+  <br>
+  <div class="container px-lg-5">
+  <div class="row mx-lg-n5">
+
+  <div class="col py-3 px-lg-5 border bg-light">
+      <div class="alert alert-secondary" role="alert">
+        <h1 class="display" style="font-weight: bold; font-size: 1.7rem;">Register / Create ChatRoom</h1>
+      </div>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6" id="form">
+      {% if not name %}
+        <form id="formDisplay">
+          <div class="form-group">
+            <input id="name" type="text" class="form-control" placeholder="Your Name">
+          </div>
+          <button class="btn btn-primary" type="submit">Register</button>
+        </form>
+      {% endif %}
+      </div>
+    </div>
+  </div>
+  <br><br>
+
+  <div class="container" id="DisplayName">
+      <h5>Create a Channel or Select a ChatRoom</h5> <br>
+    <div id="user-data" data-username="{{ name }}"></div>
+  </div>
+
+  <div id="channelContainer" class="container col-md-6" style="{% if name %}{% else %}display: none;{% endif %}" id="createChannel">
+    <form id="formChannel">
+      <div class="form-group">
+        <input id="channel" type="text" autocomplete="off" class="form-control" placeholder="Create ChatRoom">
+        <small id="channelMessage" style="color: #096bff"></small>
+      </div>
+      <button class="btn btn-primary" type="submit">Create ChatRoom</button>
+    </form>
+    <br>
+    <br>
+  </div>
+  </div>
+
+  <div class="col py-3 px-lg-5 border bg-light">
+  <div class="container">
+    <ul class="list-unstyled">
+      <div class="alert alert-primary" role="alert">
+        <li style="font-weight: bold; font-size: 1.7rem;">Available ChatRooms</li>
+      </div>
+
+      <hr class="col-md-6">
+    </ul>
+    <ul class="list-unstyled" id="channelList">
+      {% if channels %}
+        {% for channel in channels %}
+          <li class="channel-list-item">{{ channel.name }}</li>
+        {% endfor %}
+      {% else %}
+        <li>No Channels Available</li>
+      {% endif %}
+    </ul>
+  </div>
+  <div id="chatWindow" class="container chatWindow" style="visibility: hidden;">
+    <div class="container text-muted" id="title"></div>
+    <div class="container chatMessages">
+      <br>
+      <ul class="list-unstyled" id="chatMessages">
+
+      </ul>
+    </div>
+    <div class="container chatTyping">
+      <form id="formTyping">
+        <div class="form-row">
+          <div class="col-11">
+            <input id="message" type="text" autocomplete="off" name="messageTyping" placeholder="Type message" class="form-control">
+          </div>
+          <div class="col-1">
+              <button type="submit" class="btn btn-primary">Send</button>
+          </div>
+        </div>
+    </div>
+  </div>
+    </div>
+  </div>
+</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.min.js"></script>
+  <script src="/static/script.js"></script>
+  <script src="/static/channel.js"></script>
+  <script id="template" type="text/template">
+
+    {% raw %}
+      <li data-sender="{{ sender }}" class="hiddingMessage message"><strong>{{sender}}</strong> :
+        <span id="justMessage">{{message}}</span> <small>at {{ time }}</small> &nbsp &nbsp
+        </span>
+      </li>
+    {% endraw %}
+
+  </script>
+  <script>
+
+    // Connecting SocketIO
+    var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+    var template = Handlebars.compile(document.querySelector('#template').innerHTML);
+
+    var list = document.querySelector('#channelList');
+    var chatWindow = document.querySelector('#chatWindow');
+    var chatMessages = document.querySelector('#chatMessages');
+    var formTyping = document.querySelector('#formTyping');
+    var message = document.querySelector('#message');
+    var allChannels = document.querySelector('#channelList').childNodes;
+
+    {% if lastChannel %}
+
+      for ( let j = 0; j < allChannels.length; j++){
+        if (allChannels[j].innerHTML == "{{ lastChannel }}"){
+          if (chatWindow.style.visibility === "hidden"){
+            chatWindow.style.visibility = 'visible';
+          }
+          var title = document.querySelector('#title');
+          title.innerHTML = "{{ lastChannel }}";
+          socket.emit('update', {"channel": title.innerHTML});
+        }
+      }
+    {% endif %}
+
+    list.addEventListener('mouseenter', () => {
+      allChannels = document.querySelector('#channelList').childNodes;
+      if (allChannels != null){
+        // Update Messages
+        for (let i = 0; i < allChannels.length; i++){
+          allChannels[i].onclick = () => {
+            if (chatWindow.style.visibility === "hidden"){
+              chatWindow.style.visibility = 'visible';
+            }
+            var title = document.querySelector('#title');
+            title.innerHTML = allChannels[i].innerHTML;
+
+            // Send the Channel name to store in session
+            let request = new XMLHttpRequest;
+            request.open('POST', '/lastChannel')
+            request.setRequestHeader('content-type', 'application/x-www-form-urlencoded;charset=UTF-8');
+            request.send("lastChannel=" + title.innerHTML);
+            chatMessages.innerHTML = '';
+            socket.emit('update', {"channel": title.innerHTML});
+            location.reload()
+          }
+        }
+      }
+    });
+
+    // After connecting emit SendMessage
+    socket.on('connect', () => {
+      formTyping.onsubmit = () => {
+        socket.emit('sendMessage', {"channel": title.innerHTML, "message": message.value});
+        message.value = '';
+        return false;
+      }
+    });
+
+    socket.on('updateChat', function(data, name) {
+      if (data != 'notFound'){
+        let username = document.querySelector('#user-data').dataset.username;
+        if (name == username) {
+          for (var i = 0; i < data.length; i++){
+            if (data[i].message != null){
+              oldLi = template({"time": data[i].time, "sender": data[i].sender, "message": data[i].message});
+              chatMessages.innerHTML += oldLi;
+            }
+          }
+        }
+      }
+      else {
+        chatMessages.innerHTML = '';
+      }
+    });
+
+    // Update last new message.
+    socket.on('update', data => {
+      newLi = template({"time": data.time, "sender": data.sender, "message": data.message});
+      chatMessages.innerHTML += (newLi);
+    });
+
+  </script>
+
+{% endblock %}
