@@ -1,0 +1,129 @@
+html, body{
+    height: 100%;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.container{
+    display: flex;
+    height: 95%;
+    background-color: #5c5c5c;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.right-side{
+    align-self: stretch;
+    background-color: #6a9c67;
+    border-radius: 10px;
+}
+.left-side{
+    background-color: #73679c;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+}
+#chat_window{
+    height: 100%;
+}
+.chat_window_container{
+    background-color: #333333;
+    height: 88%;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    overflow: auto;
+}
+.room_select_container{
+    overflow:auto;
+}
+ul{
+    padding: 5px;
+}
+li{
+    list-style-type: none;
+    background-color: orange;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 3px;
+    margin-top: 5px;
+}
+#username{
+    background-color: #5b489c;
+    border-radius: 5px;
+    padding: 5px;
+    text-align: center;
+    border: 3px solid black;
+    color: white;
+}
+
+#chat_window > p{
+    padding: 5px;
+    border-radius: 4px;
+    margin:5px;
+}
+.messageFloatLeft{
+    background-color: #a6a6a6;
+    float: left;
+    width: 65%;
+}
+.messageFloatRight{
+    background-color: #b3ffad;
+    float: right;
+    width: 65%;
+    text-align: right;
+}
+.sysMessage{
+    background-color: #fff7ab;
+    width: 100%;
+    float: right;
+    text-align: center;
+}
+.messageUsername{
+    color: #0570ad;
+    font-weight: bold;
+}
+.messageTime{
+    color: #0570ad;
+    font-size: 0.8em;
+}
+.pop_up_window {
+    text-align: center;
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+.window_content {
+    position: absolute;
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    left: 40%;
+    width: 50%;
+}
+.closeButton {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+#pop_up_privatechat{
+    display: none;
+}
+#pop_up_addroom{
+    display: none;
+}
